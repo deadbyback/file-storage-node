@@ -1,0 +1,66 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DB_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  firstName String?
+  lastName  String?
+  username  String   @unique
+  email     String?  @unique
+  password  String
+  roles     Json
+}
+
+model Account {
+  id                String             @id @default(cuid())
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  organizationId    Int?
+  email             String?
+  name              String?
+  password          String?
+  subscriptionPlans SubscriptionPlan[]
+  archives          Archive[]
+  accounts          Account[]          @relation(name: "AccountOnAccounts")
+  account           Account?           @relation(name: "AccountOnAccounts", fields: [accountId], references: [id])
+  accountId         String?
+}
+
+model SubscriptionPlan {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  memoryLimit Int?
+  name        String?
+  account     Account? @relation(fields: [accountId], references: [id])
+  accountId   String?
+}
+
+model File {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  name      String?
+  filePath  String?
+  size      Int?
+  archive   Archive? @relation(fields: [archiveId], references: [id])
+  archiveId String?
+}
+
+model Archive {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  name      String?
+  account   Account? @relation(fields: [accountId], references: [id])
+  accountId String?
+  files     File[]
+}
